@@ -8,7 +8,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerCommand>$(Q2DIR)\q2proded64.exe</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>+set game kingpin +set deathmatch 1 map kpdm1_q2</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>+set game kingpin +set deathmatch 1 +set sys_forcegamelib $(Q2DIR)\debug\gamex86_64.dll map kpdm1_q2</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(Q2DIR)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
@@ -21,7 +21,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommand>$(Q2DIR)\q2proded64.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>+set game kingpin +set deathmatch 1 map kpdm1_q2</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>+set game kingpin +set deathmatch 1 +set sys_forcegamelib $(Q2DIR)\debug\gamex86_64.dll map kpdm1_q2</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(Q2DIR)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
 </Project>
