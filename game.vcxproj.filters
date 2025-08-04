@@ -83,6 +83,7 @@
     <None Include="game.def">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="Makefile" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="q_shared.h">

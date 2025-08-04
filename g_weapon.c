@@ -682,6 +682,9 @@ void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 	int			mask;
 	qboolean	water;
 
+	if (!self)
+		return;
+
 	VectorMA (start, 8192, aimdir, end);
 	VectorCopy (start, from);
 	ignore = self;
@@ -1174,6 +1177,31 @@ static qboolean fire_concussion(edict_t *self, vec3_t start, vec3_t aimdir, floa
 			}
 		}
 	}
+
+	// if went through water, determine where the end and make a bubble trail
+	if (water)
+	{
+		vec3_t	pos;
+
+		VectorSubtract(tr.endpos, water_start, dir);
+
+		VectorNormalize(dir);
+		VectorMA(tr.endpos, -2, dir, pos);
+		if (gi.pointcontents(pos) & MASK_WATER)
+			VectorCopy(pos, tr.endpos);
+		else
+			tr = gi.trace(pos, NULL, NULL, water_start, tr.ent, MASK_WATER);
+
+		VectorAdd(water_start, tr.endpos, pos);
+		VectorScale(pos, 0.5, pos);
+
+		gi.WriteByte(svc_temp_entity);
+		gi.WriteByte(TE_BUBBLETRAIL);
+		gi.WritePosition(water_start);
+		gi.WritePosition(tr.endpos);
+		gi.multicast(pos, MULTICAST_PVS);
+	}
+
 	return true;
 }
 // END JOSEPH

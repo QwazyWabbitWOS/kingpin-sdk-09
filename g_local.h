@@ -510,12 +510,14 @@ extern	int	body_armor_index;
 extern	int	meansOfDeath;
 
 
-extern	edict_t			*g_edicts;
+#define q_offsetof(t, m)	((size_t)&((t *)0)->m)
 
-#define	FOFS(x) (int)&(((edict_t *)0)->x)
-#define	STOFS(x) (int)&(((spawn_temp_t *)0)->x)
-#define	LLOFS(x) (int)&(((level_locals_t *)0)->x)
-#define	CLOFS(x) (int)&(((gclient_t *)0)->x)
+extern	edict_t* g_edicts;
+
+#define FOFS(x)		q_offsetof(edict_t, x)
+#define STOFS(x)	q_offsetof(spawn_temp_t, x)
+#define	LLOFS(x)	q_offsetof(level_locals_t, x)
+#define	CLOFS(x)	q_offsetof(gclient_t, x)
 
 #define random()	((rand () & 0x7fff) / ((float)0x7fff))
 #define crandom()	(2.0 * (random() - 0.5))
@@ -752,12 +754,12 @@ qboolean fire_crowbar (edict_t *self, vec3_t start, vec3_t forward, int damage, 
 //
 // g_ptrail.c
 //
-void PlayerTrail_Init (void);
-void PlayerTrail_Add (vec3_t spot);
-void PlayerTrail_New (vec3_t spot);
-edict_t *PlayerTrail_PickFirst (edict_t *self);
-edict_t *PlayerTrail_PickNext (edict_t *self);
-edict_t	*PlayerTrail_LastSpot (void);
+//void PlayerTrail_Init (void);
+//void PlayerTrail_Add (vec3_t spot);
+//void PlayerTrail_New (vec3_t spot);
+//edict_t *PlayerTrail_PickFirst (edict_t *self);
+//edict_t *PlayerTrail_PickNext (edict_t *self);
+//edict_t	*PlayerTrail_LastSpot (void);
 
 //
 // g_client.c
@@ -1146,4 +1148,5 @@ struct edict_s
 #define WEAPON_MOD_RELOAD	2
 #define WEAPON_MOD_DAMAGE	4
 #define	WEAPON_MOD_COOLING_JACKET	8
+
 

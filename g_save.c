@@ -132,7 +132,7 @@ is loaded.
 */
 void InitGame (void)
 {
-	gi.dprintf ("==== InitGame ====\n");
+	gi.dprintf ("==== InitGame %s ====\n", GAMEVERSION);
 
 	gun_x = gi.cvar ("gun_x", "0", 0);
 	gun_y = gi.cvar ("gun_y", "0", 0);
@@ -227,7 +227,7 @@ void WriteField1 (FILE *f, field_t *field, byte *base)
 	case F_LSTRING:
 	case F_GSTRING:
 		if ( *(char **)p )
-			len = strlen(*(char **)p) + 1;
+			len = (int)strlen(*(char **)p) + 1;
 		else
 			len = 0;
 		*(int *)p = len;
@@ -292,9 +292,12 @@ void WriteField2 (FILE *f, field_t *field, byte *base)
 	case F_LSTRING:
 		if ( *(char **)p )
 		{
-			len = strlen(*(char **)p) + 1;
+			len = (int)strlen(*(char **)p) + 1;
 			fwrite (*(char **)p, len, 1, f);
 		}
+		break;
+
+	default:
 		break;
 	}
 }
@@ -449,8 +452,10 @@ void WriteGame (char *filename, qboolean autosave)
 		SaveClientData ();
 
 	f = fopen (filename, "wb");
-	if (!f)
-		gi.error ("Couldn't open %s", filename);
+	if (!f) {
+		gi.error("Couldn't open %s", filename);
+		return;
+	}
 
 	memset (str, 0, sizeof(str));
 	strcpy (str, __DATE__);
@@ -470,13 +475,15 @@ void ReadGame (char *filename)
 {
 	FILE	*f;
 	int		i;
-	char	str[16];
+	char	str[16] = { 0 };
 
 	gi.FreeTags (TAG_GAME);
 
 	f = fopen (filename, "rb");
-	if (!f)
-		gi.error ("Couldn't open %s", filename);
+	if (!f) {
+		gi.error("Couldn't open %s", filename);
+		return;
+	}
 
 	fread (str, sizeof(str), 1, f);
 	if (strcmp (str, __DATE__))
@@ -615,8 +622,10 @@ void WriteLevel (char *filename)
 	void	*base;
 
 	f = fopen (filename, "wb");
-	if (!f)
-		gi.error ("Couldn't open %s", filename);
+	if (!f) {
+		gi.error("Couldn't open %s", filename);
+		return;
+	}
 
 	// write out edict size for checking
 	i = sizeof(edict_t);

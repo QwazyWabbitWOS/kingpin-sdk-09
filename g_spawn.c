@@ -7,6 +7,8 @@ typedef struct
 } spawn_t;
 
 
+void SP_item_quad(edict_t* self) { G_FreeEdict(self); }
+void SP_item_silencer(edict_t* self) { G_FreeEdict(self); }
 void SP_item_health (edict_t *self);
 void SP_item_health_small (edict_t *self);
 void SP_item_health_large (edict_t *self);
@@ -79,7 +81,9 @@ void SP_info_notnull (edict_t *self);
 void SP_path_corner (edict_t *self);
 
 
-void SP_misc_explobox (edict_t *self);
+void SP_misc_explobox(edict_t* self);
+void SP_point_combat(edict_t* self);
+void SP_misc_deadsoldier(edict_t* self);
 
 void SP_misc_gib_arm (edict_t *self);
 void SP_misc_gib_leg (edict_t *self);
@@ -133,6 +137,8 @@ spawn_t	spawns[] = {
 	{"item_health_small", SP_item_health_small},
 	{"item_health_large", SP_item_health_large},
 	{"item_health_mega", SP_item_health_mega},
+	{"item_quad", SP_item_quad},
+	{"item_silencer", SP_item_silencer},
 
 	{"info_player_start", SP_info_player_start},
 	{"info_player_deathmatch", SP_info_player_deathmatch},
@@ -204,7 +210,9 @@ spawn_t	spawns[] = {
 	{"junior", SP_junior},
 	// END 11-05-98
 	{ "lightflare", SP_junior },//FREDZ was SP_light just remove
+	{ "point_combat", SP_point_combat },
 
+	{"misc_deadsoldier", SP_misc_deadsoldier},
 	{"misc_explobox", SP_misc_explobox},
 	{"misc_gib_arm", SP_misc_gib_arm},
 	{"misc_gib_leg", SP_misc_gib_leg},
@@ -345,7 +353,7 @@ char *ED_NewString (char *string)
 	char	*newb, *new_p;
 	int		i,l;
 	
-	l = strlen(string) + 1;
+	l = (int)strlen(string) + 1;
 
 	newb = gi.TagMalloc (l, TAG_LEVEL);
 
@@ -379,52 +387,56 @@ Takes a key/value pair and sets the binary values
 in an edict
 ===============
 */
-void ED_ParseField (char *key, char *value, edict_t *ent)
+void ED_ParseField(char* key, char* value, edict_t* ent)
 {
-	field_t	*f;
-	byte	*b;
+	field_t* f;
+	byte* b;
 	float	v;
-	vec3_t	vec;
+	vec3_t	vec = { 0 };
 
-	for (f=fields ; f->name ; f++)
+	for (f = fields; f->name; f++)
 	{
 		if (!(f->flags & FFL_NOSPAWN) && !Q_stricmp(f->name, key))
 		{	// found it
 			if (f->flags & FFL_SPAWNTEMP)
-				b = (byte *)&st;
+				b = (byte*)&st;
 			else
-				b = (byte *)ent;
+				b = (byte*)ent;
 
 			switch (f->type)
 			{
 			case F_LSTRING:
-				*(char **)(b+f->ofs) = ED_NewString (value);
+				*(char**)(b + f->ofs) = ED_NewString(value);
 				break;
 			case F_VECTOR:
-				sscanf (value, "%f %f %f", &vec[0], &vec[1], &vec[2]);
-				((float *)(b+f->ofs))[0] = vec[0];
-				((float *)(b+f->ofs))[1] = vec[1];
-				((float *)(b+f->ofs))[2] = vec[2];
+				if (sscanf(value, "%f %f %f", &vec[0], &vec[1], &vec[2]) != 3) {
+					gi.dprintf("WARNING: Vector field incomplete in %s, map: %s, field: %s\n", __func__, level.mapname, f->name);
+				}
+				((float*)(b + f->ofs))[0] = vec[0];
+				((float*)(b + f->ofs))[1] = vec[1];
+				((float*)(b + f->ofs))[2] = vec[2];
 				break;
 			case F_INT:
-				*(int *)(b+f->ofs) = atoi(value);
+				*(int*)(b + f->ofs) = atoi(value);
 				break;
 			case F_FLOAT:
-				*(float *)(b+f->ofs) = atof(value);
+				*(float*)(b + f->ofs) = atof(value);
 				break;
 			case F_ANGLEHACK:
 				v = atof(value);
-				((float *)(b+f->ofs))[0] = 0;
-				((float *)(b+f->ofs))[1] = v;
-				((float *)(b+f->ofs))[2] = 0;
+				((float*)(b + f->ofs))[0] = 0;
+				((float*)(b + f->ofs))[1] = v;
+				((float*)(b + f->ofs))[2] = 0;
 				break;
 			case F_IGNORE:
+				break;
+			default:
 				break;
 			}
 			return;
 		}
 	}
-	gi.dprintf ("%s is not a field\n", key);
+	gi.dprintf("%s is not a field\n", key);
 }
 
 /*
@@ -581,8 +593,10 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 		com_token = COM_Parse (&entities);
 		if (!entities)
 			break;
-		if (com_token[0] != '{')
-			gi.error ("ED_LoadFromFile: found %s when expecting {",com_token);
+		if (com_token[0] != '{') {
+			gi.error("ED_LoadFromFile: found %s when expecting {", com_token);
+			return;
+		}
 
 		if (!ent)
 			ent = g_edicts;

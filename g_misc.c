@@ -465,7 +465,7 @@ void SP_point_combat (edict_t *self)
 	VectorSet (self->maxs, 8, 8, 16);
 	self->svflags = SVF_NOCLIENT;
 	gi.linkentity (self);
-};
+}
 
 
 /*QUAKED viewthing (0 .5 .8) (-8 -8 -8) (8 8 8)
@@ -500,7 +500,7 @@ Used as a positional target for spotlights, etc.
 void SP_info_null (edict_t *self)
 {
 	G_FreeEdict (self);
-};
+}
 
 
 /*QUAKED info_notnull (0 0.5 0) (-4 -4 -4) (4 4 4)
@@ -510,7 +510,7 @@ void SP_info_notnull (edict_t *self)
 {
 	VectorCopy (self->s.origin, self->absmin);
 	VectorCopy (self->s.origin, self->absmax);
-};
+}
 
 /*QUAKED junior (0 1 0) (-8 -8 -8) (8 8 8) START_OFF
 */
@@ -912,13 +912,13 @@ health (80), and dmg (150).
 void barrel_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf)
 
 {
-	float	ratio;
+	//float	ratio;
 	vec3_t	v;
 
 	if ((!other->groundentity) || (other->groundentity == self))
 		return;
 
-	ratio = (float)other->mass / (float)self->mass;
+	//ratio = (float)other->mass / (float)self->mass;
 	VectorSubtract (self->s.origin, other->s.origin, v);
 	//M_walkmove (self, vectoyaw(v), 20 * ratio * FRAMETIME);
 }
@@ -1619,7 +1619,7 @@ void target_string_use (edict_t *self, edict_t *other, edict_t *activator)
 	int		n, l;
 	char	c;
 
-	l = strlen(self->message);
+	l = (int)strlen(self->message);
 	for (e = self->teammaster; e; e = e->teamchain)
 	{
 		if (!e->count)

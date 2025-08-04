@@ -17,17 +17,10 @@ void Weapon_SPistol (edict_t *ent);
 void Weapon_Pistol (edict_t *ent);
 void Weapon_Tommygun (edict_t *ent);
 
-void Weapon_Blaster (edict_t *ent);
 void Weapon_Shotgun (edict_t *ent);
-void Weapon_SuperShotgun (edict_t *ent);
-void Weapon_Machinegun (edict_t *ent);
-void Weapon_Chaingun (edict_t *ent);
-void Weapon_HyperBlaster (edict_t *ent);
 void Weapon_RocketLauncher (edict_t *ent);
 void Weapon_Grenade (edict_t *ent);
 void Weapon_GrenadeLauncher (edict_t *ent);
-void Weapon_Railgun (edict_t *ent);
-void Weapon_BFG (edict_t *ent);
 void Weapon_FlameThrower (edict_t *ent);
 
 void Weapon_Barmachinegun (edict_t *ent);
@@ -112,32 +105,51 @@ gitem_t	*FindItem (char *pickup_name)
 
 //======================================================================
 
-void DoRespawn (edict_t *ent)
+void DoRespawn(edict_t* ent)
 {
+	if (!ent)
+		return;
+
 	if (ent->team)
 	{
-		edict_t	*master;
-		int	count;
-		int choice;
+		edict_t* master;
+		unsigned count;
+		unsigned choice;
 
 		master = ent->teammaster;
+		if (master == NULL)
+			return;
 
-		for (count = 0, ent = master; ent; ent = ent->chain, count++)
-			;
+		if ((int)dmflags->value & DF_WEAPONS_STAY &&
+			master->item && (master->item->flags & IT_WEAPON))
+		{
+			ent = master;
+		}
+		else
+		{
+			count = 0;
+			for (ent = master; ent; ent = ent->chain)
+				count++;
 
-		choice = rand() % count;
+			choice = count ? rand() % count : 0;
 
-		for (count = 0, ent = master; count < choice; ent = ent->chain, count++)
-			;
+			count = 0;
+			for (ent = master; count < choice; ent = ent->chain)
+				count++;
+		}
 	}
 
-	ent->svflags &= ~SVF_NOCLIENT;
-	ent->solid = SOLID_TRIGGER;
-	gi.linkentity (ent);
+	if (ent)
+	{
+		ent->svflags &= ~SVF_NOCLIENT;
+		ent->solid = SOLID_TRIGGER;
+		gi.linkentity(ent);
 
-	// send an effect
-	ent->s.event = EV_ITEM_RESPAWN;
+		// send an effect
+		ent->s.event = EV_ITEM_RESPAWN;
+	}
 }
+
 
 void SetRespawn (edict_t *ent, float delay)
 {
@@ -1328,8 +1340,10 @@ void PrecacheItem (gitem_t *it)
 			s++;
 
 		len = s-start;
-		if (len >= MAX_QPATH || len < 5)
-			gi.error ("PrecacheItem: %s has bad precache string", it->classname);
+		if (len >= MAX_QPATH || len < 5) {
+			gi.error("PrecacheItem: %s has bad precache string", it->classname);
+			return;
+		}
 		memcpy (data, start, len);
 		data[len] = 0;
 		if (*s)
